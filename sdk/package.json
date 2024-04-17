@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk",
-  "version": "0.5.3-beta.5",
+  "version": "0.5.3-beta.6",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -17,10 +17,6 @@
   "types": "./dist/cjs/index.d.ts",
   "module": "./dist/esm/index.js",
   "description": "The core package for the Connect SDK, used in conjunction with 1 or more of the chain packages",
-  "files": [
-    "dist/esm",
-    "dist/cjs"
-  ],
   "keywords": [
     "wormhole",
     "sdk",
@@ -30,6 +26,10 @@
   "engines": {
     "node": ">=16"
   },
+  "files":[
+    "dist/cjs",
+    "dist/esm"
+  ],
   "sideEffects": false,
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
@@ -216,32 +216,59 @@
       ]
     }
   },
+  "bundleDependencies": [
+    "@wormhole-foundation/sdk-algorand",
+    "@wormhole-foundation/sdk-algorand-core",
+    "@wormhole-foundation/sdk-algorand-tokenbridge",
+    "@wormhole-foundation/sdk-aptos",
+    "@wormhole-foundation/sdk-aptos-core",
+    "@wormhole-foundation/sdk-aptos-tokenbridge",
+    "@wormhole-foundation/sdk-base",
+    "@wormhole-foundation/sdk-connect",
+    "@wormhole-foundation/sdk-cosmwasm",
+    "@wormhole-foundation/sdk-cosmwasm-core",
+    "@wormhole-foundation/sdk-cosmwasm-ibc",
+    "@wormhole-foundation/sdk-cosmwasm-tokenbridge",
+    "@wormhole-foundation/sdk-definitions",
+    "@wormhole-foundation/sdk-evm",
+    "@wormhole-foundation/sdk-evm-cctp",
+    "@wormhole-foundation/sdk-evm-core",
+    "@wormhole-foundation/sdk-evm-portico",
+    "@wormhole-foundation/sdk-evm-tokenbridge",
+    "@wormhole-foundation/sdk-solana",
+    "@wormhole-foundation/sdk-solana-cctp",
+    "@wormhole-foundation/sdk-solana-core",
+    "@wormhole-foundation/sdk-solana-tokenbridge",
+    "@wormhole-foundation/sdk-sui",
+    "@wormhole-foundation/sdk-sui-core",
+    "@wormhole-foundation/sdk-sui-tokenbridge"
+  ],
   "dependencies": {
-    "@wormhole-foundation/sdk-base": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-definitions": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-connect": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-evm": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-evm-core": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-evm-tokenbridge": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-evm-portico": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-evm-cctp": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-solana": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-solana-core": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-solana-tokenbridge": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-solana-cctp": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-cosmwasm": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-cosmwasm-core": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-cosmwasm-tokenbridge": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-cosmwasm-ibc": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-sui": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-sui-core": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-sui-tokenbridge": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-aptos": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-aptos-core": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-aptos-tokenbridge": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-algorand": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-algorand-core": "0.5.3-beta.5",
-    "@wormhole-foundation/sdk-algorand-tokenbridge": "0.5.3-beta.5"
+    "@wormhole-foundation/sdk-algorand": "file:../platforms/algorand",
+    "@wormhole-foundation/sdk-algorand-core": "file:../platforms/algorand/protocols/core",
+    "@wormhole-foundation/sdk-algorand-tokenbridge": "file:../platforms/algorand/protocols/tokenBridge",
+    "@wormhole-foundation/sdk-aptos": "file:../platforms/aptos",
+    "@wormhole-foundation/sdk-aptos-core": "file:../platforms/aptos/protocols/core",
+    "@wormhole-foundation/sdk-aptos-tokenbridge": "file:../platforms/aptos/protocols/tokenBridge",
+    "@wormhole-foundation/sdk-base": "file:../core/base",
+    "@wormhole-foundation/sdk-connect": "file:../connect",
+    "@wormhole-foundation/sdk-cosmwasm": "file:../platforms/cosmwasm",
+    "@wormhole-foundation/sdk-cosmwasm-core": "file:../platforms/cosmwasm/protocols/core",
+    "@wormhole-foundation/sdk-cosmwasm-ibc": "file:../platforms/cosmwasm/protocols/ibc",
+    "@wormhole-foundation/sdk-cosmwasm-tokenbridge": "file:../platforms/cosmwasm/protocols/tokenBridge",
+    "@wormhole-foundation/sdk-definitions": "file:../core/definitions",
+    "@wormhole-foundation/sdk-evm": "file:../platforms/evm",
+    "@wormhole-foundation/sdk-evm-cctp": "file:../platforms/evm/protocols/cctp",
+    "@wormhole-foundation/sdk-evm-core": "file:../platforms/evm/protocols/core",
+    "@wormhole-foundation/sdk-evm-portico": "file:../platforms/evm/protocols/portico",
+    "@wormhole-foundation/sdk-evm-tokenbridge": "file:../platforms/evm/protocols/tokenBridge",
+    "@wormhole-foundation/sdk-solana": "file:../platforms/solana",
+    "@wormhole-foundation/sdk-solana-cctp": "file:../platforms/solana/protocols/cctp",
+    "@wormhole-foundation/sdk-solana-core": "file:../platforms/solana/protocols/core",
+    "@wormhole-foundation/sdk-solana-tokenbridge": "file:../platforms/solana/protocols/tokenBridge",
+    "@wormhole-foundation/sdk-sui": "file:../platforms/sui",
+    "@wormhole-foundation/sdk-sui-core": "file:../platforms/sui/protocols/core",
+    "@wormhole-foundation/sdk-sui-tokenbridge": "file:../platforms/sui/protocols/tokenBridge"
   },
   "type": "module"
 }
