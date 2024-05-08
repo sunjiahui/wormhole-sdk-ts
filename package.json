@@ -38,6 +38,7 @@
     "core/base",
     "core/definitions",
     "core/icons",
+    "spy",
     "connect",
     "platforms/evm",
     "platforms/evm/protocols/core",
