@@ -75,8 +75,7 @@ export class AutomaticPorticoRoute<N extends Network>
     name: "AutomaticPortico",
   };
 
-  // TODO: "ETH"?
-  private static _supportedTokens = ["WETH", "wstETH", "USDT"];
+  private static _supportedTokens = ["ETH", "WETH", "wstETH", "USDT"];
 
   static supportedNetworks(): Network[] {
     return ["Mainnet"];
@@ -98,7 +97,7 @@ export class AutomaticPorticoRoute<N extends Network>
       .flat()
       .filter((td) => {
         // Only tokens native to the chain are supported
-        return td.chain === chain;
+        return td.chain === chain && !td.original;
       });
 
     return supported.map((td) => Wormhole.tokenId(chain, td.address));
