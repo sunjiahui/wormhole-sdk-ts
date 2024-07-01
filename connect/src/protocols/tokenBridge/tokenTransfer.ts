@@ -363,6 +363,7 @@ export namespace TokenTransfer {
     if (isSourceFinalized(receipt)) {
       if (!receipt.attestation.id) throw "Attestation id required to fetch attestation";
       const { id } = receipt.attestation;
+      console.log("getting vaa");
       const attestation = await TokenTransfer.getTransferVaa(wh, id, leftover(start, timeout));
       receipt = {
         ...receipt,
@@ -378,6 +379,7 @@ export namespace TokenTransfer {
     if (isAttested(receipt) || isSourceFinalized(receipt)) {
       if (!receipt.attestation.id) throw "Attestation id required to fetch redeem tx";
       const { id } = receipt.attestation;
+      console.log("getting tx status");
       const txStatus = await wh.getTransactionStatus(id, leftover(start, timeout));
       if (txStatus && txStatus.globalTx?.destinationTx?.txHash) {
         const { chainId, txHash } = txStatus.globalTx.destinationTx;
@@ -394,6 +396,7 @@ export namespace TokenTransfer {
     // Note: We do not get any destinationTxs with this method
     if (isAttested(receipt)) {
       if (!receipt.attestation.attestation) throw "Signed Attestation required to check for redeem";
+      console.log("checking transfer complete");
 
       let isComplete = await TokenTransfer.isTransferComplete(
         toChain,

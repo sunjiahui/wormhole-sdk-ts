@@ -141,6 +141,7 @@ export class TokenBridgeRoute<N extends Network>
     } satisfies SourceInitiatedTransferReceipt;
   }
 
+  // TODO: should we still have this instance method or only the static function?
   async complete(signer: Signer, receipt: R): Promise<R> {
     if (!isAttested(receipt))
       throw new Error("The source must be finalized in order to complete the transfer");
@@ -157,6 +158,27 @@ export class TokenBridgeRoute<N extends Network>
     };
   }
 
+  static async complete<N extends Network>(
+    wh: Wormhole<N>,
+    signer: Signer,
+    receipt: R,
+  ): Promise<R> {
+    if (!isAttested(receipt))
+      throw new Error("The source must be finalized in order to complete the transfer");
+    const dstTxIds = await TokenTransfer.redeem<N>(
+      wh.getChain(receipt.to),
+      receipt.attestation.attestation as TokenTransfer.VAA,
+      signer,
+    );
+
+    return {
+      ...receipt,
+      state: TransferState.DestinationInitiated,
+      destinationTxs: dstTxIds,
+    };
+  }
+
+  // TODO: should we still have this instance method or only the static function?
   public override async *track(receipt: R, timeout?: number) {
     yield* TokenTransfer.track(
       this.wh,
@@ -165,6 +187,10 @@ export class TokenBridgeRoute<N extends Network>
       this.request.fromChain,
       this.request.toChain,
     );
+  }
+
+  public static async *track<N extends Network>(wh: Wormhole<N>, receipt: R, timeout?: number) {
+    yield* TokenTransfer.track(wh, receipt, timeout);
   }
 
   private toTransferDetails(
