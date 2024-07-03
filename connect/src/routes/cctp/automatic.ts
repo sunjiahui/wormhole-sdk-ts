@@ -17,6 +17,7 @@ import type {
   Quote,
   QuoteResult,
   Receipt,
+  SourceTxInfo,
   TransferParams,
   ValidatedTransferParams,
   ValidationResult,
@@ -87,12 +88,9 @@ export class AutomaticCCTPRoute<N extends Network>
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
     // Ensure the source token is USDC
-    const sourceChainUsdcContract  = circle.usdcContract.get(fromChain.network, fromChain.chain);
-    if (!sourceChainUsdcContract ) return [];
-    if (!isSameToken(
-      sourceToken,
-      Wormhole.tokenId(fromChain.chain, sourceChainUsdcContract),
-    )){
+    const sourceChainUsdcContract = circle.usdcContract.get(fromChain.network, fromChain.chain);
+    if (!sourceChainUsdcContract) return [];
+    if (!isSameToken(sourceToken, Wormhole.tokenId(fromChain.chain, sourceChainUsdcContract))) {
       return [];
     }
 
@@ -103,6 +101,13 @@ export class AutomaticCCTPRoute<N extends Network>
 
   static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
     return chain.supportsAutomaticCircleBridge();
+  }
+
+  static async lookupSourceTxInfo<N extends Network>(
+    chain: ChainContext<N>,
+    txid: string,
+  ): Promise<SourceTxInfo> {
+    throw new Error("Method not implemented.");
   }
 
   getDefaultOptions(): Op {

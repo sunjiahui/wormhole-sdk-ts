@@ -17,6 +17,7 @@ import { ManualRoute } from "../route.js";
 import type {
   Quote,
   QuoteResult,
+  SourceTxInfo,
   TransferParams,
   ValidatedTransferParams,
   ValidationResult,
@@ -81,11 +82,8 @@ export class CCTPRoute<N extends Network>
   ): Promise<TokenId[]> {
     // Ensure the source token is USDC
     const sourceChainUsdcContract = circle.usdcContract.get(fromChain.network, fromChain.chain);
-    if (!sourceChainUsdcContract ) return [];
-    if (!isSameToken(
-      sourceToken,
-      Wormhole.tokenId(fromChain.chain, sourceChainUsdcContract),
-    )){
+    if (!sourceChainUsdcContract) return [];
+    if (!isSameToken(sourceToken, Wormhole.tokenId(fromChain.chain, sourceChainUsdcContract))) {
       return [];
     }
 
@@ -96,6 +94,13 @@ export class CCTPRoute<N extends Network>
 
   static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
     return chain.supportsCircleBridge();
+  }
+
+  static async lookupSourceTxInfo<N extends Network>(
+    chain: ChainContext<N>,
+    txid: string,
+  ): Promise<SourceTxInfo> {
+    throw new Error("Method not implemented.");
   }
 
   getDefaultOptions(): Op {

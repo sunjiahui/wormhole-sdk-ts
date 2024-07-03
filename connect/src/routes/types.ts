@@ -76,3 +76,25 @@ export type QuoteError = {
   success: false;
   error: Error;
 };
+
+// TODO: should this type have a generic parameter
+export type SourceTxInfo = {
+  sourceToken: {
+    token: TokenId;
+    amount: amount.Amount;
+  };
+  // the destination token and amount that is *expected* to be received
+  destinationToken: {
+    token: TokenId;
+    amount: amount.Amount;
+  };
+  // TODO: what if multiple fees? e.g. multi-transceiver NTT
+  relayFee?: {
+    token: TokenId;
+    amount: amount.Amount;
+  };
+  // the "block" the transaction was included in (platform specific)
+  block: string;
+  // TODO: add more fields as needed
+  // minAmount?: amount.Amount; // the minimum amount that must be received
+};

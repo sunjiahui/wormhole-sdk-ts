@@ -5,6 +5,7 @@ import type {
   Quote,
   QuoteResult,
   Receipt,
+  SourceTxInfo,
   TransferParams,
   ValidatedTransferParams,
   ValidationResult,
@@ -159,6 +160,13 @@ export class AutomaticPorticoRoute<N extends Network>
 
   static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
     return chain.supportsPorticoBridge();
+  }
+
+  static async lookupSourceTxInfo<N extends Network>(
+    chain: ChainContext<N>,
+    txid: string,
+  ): Promise<SourceTxInfo> {
+    throw new Error("Method not implemented.");
   }
 
   async isAvailable(): Promise<boolean> {

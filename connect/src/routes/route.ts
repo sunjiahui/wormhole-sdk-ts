@@ -7,11 +7,13 @@ import type {
   Quote,
   QuoteResult,
   Receipt,
+  SourceTxInfo,
   TransferParams,
   ValidatedTransferParams,
   ValidationResult,
 } from "./types.js";
 import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
+import { TxHash } from "@wormhole-foundation/sdk-definitions";
 
 export abstract class Route<
   N extends Network,
@@ -67,7 +69,7 @@ export interface RouteMeta {
 }
 
 export interface RouteConstructor<OP extends Options = Options> {
-  new<N extends Network>(wh: Wormhole<N>, request: RouteTransferRequest<N>): Route<N, OP>;
+  new <N extends Network>(wh: Wormhole<N>, request: RouteTransferRequest<N>): Route<N, OP>;
   /**  Details about the route provided by the implementation */
   readonly meta: RouteMeta;
   /** get the list of networks this route supports */
@@ -78,12 +80,16 @@ export interface RouteConstructor<OP extends Options = Options> {
   isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean;
   /** get the list of source tokens that are possible to send */
   supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]>;
-  /** get the list of destination tokens that may be recieved on the destination chain */
+  /** get the list of destination tokens that may be received on the destination chain */
   supportedDestinationTokens<N extends Network>(
     token: TokenId,
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
   ): Promise<TokenId[]>;
+  lookupSourceTxInfo<N extends Network>(
+    chain: ChainContext<N>,
+    txid: TxHash,
+  ): Promise<SourceTxInfo>;
 }
 
 // Use this to ensure the static methods defined in the RouteConstructor

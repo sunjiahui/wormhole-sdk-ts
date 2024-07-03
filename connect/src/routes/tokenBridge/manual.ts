@@ -19,6 +19,7 @@ import { ManualRoute } from "../route.js";
 import type {
   Quote,
   QuoteResult,
+  SourceTxInfo,
   TransferParams,
   ValidatedTransferParams,
   ValidationResult,
@@ -89,6 +90,13 @@ export class TokenBridgeRoute<N extends Network>
 
   static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
     return chain.supportsTokenBridge();
+  }
+
+  static async lookupSourceTxInfo<N extends Network>(
+    chain: ChainContext<N>,
+    txid: string,
+  ): Promise<SourceTxInfo> {
+    throw new Error("Method not implemented.");
   }
 
   getDefaultOptions(): Op {
