@@ -135,6 +135,15 @@ export class SuiPlatform<N extends Network>
     return txhashes;
   }
 
+  static async sendNoWait(chain: Chain, rpc: SuiClient, stxns: SignedTx[]): Promise<TxHash[]> {
+    const txhashes = [];
+    for (const stxn of stxns) {
+      const pendingTx = await rpc.executeTransactionBlock(stxn);
+      txhashes.push(pendingTx.digest);
+    }
+    return txhashes;
+  }
+
   static async getLatestBlock(rpc: SuiClient): Promise<number> {
     return Number(await rpc.getLatestCheckpointSequenceNumber());
   }

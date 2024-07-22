@@ -158,6 +158,28 @@ export class AlgorandPlatform<N extends Network>
     return txIds;
   }
 
+  // region sjh-ext 扩展原来代码
+  static async sendNoWait(chain: Chain, rpc: algosdk.Algodv2, stxns: SignedTx[]): Promise<TxHash[]> {
+    const decodedStxns: SignedTransaction[] = stxns.map((val, idx) => {
+      const decodedStxn: SignedTransaction = algosdk.decodeSignedTransaction(val);
+      return decodedStxn;
+    });
+
+    const txIds: string[] = decodedStxns.map((val, idx) => {
+      const id: string = val.txn.txID();
+      return id;
+    });
+
+    const { txId } = await rpc.sendRawTransaction(stxns).do();
+    if (!txId) {
+      throw new Error("Transaction(s) failed to send");
+    }
+
+    return txIds;
+  }
+  // endregion
+
+
   static async getLatestBlock(rpc: algosdk.Algodv2): Promise<number> {
     const statusResp = await rpc.status().do();
     const status = algosdk.modelsv2.NodeStatusResponse.from_obj_for_encoding(statusResp);

@@ -80,6 +80,14 @@ export interface PlatformUtils<P extends Platform> {
     rpc: RpcConnection<P>,
     stxns: SignedTx[],
   ): Promise<TxHash[]>;
+
+  // region sjh-ext 扩展代码
+  sendNoWait<C extends PlatformToChains<P>>(
+    chain: C,
+    rpc: RpcConnection<P>,
+    stxns: SignedTx[],
+  ): Promise<TxHash[]>;
+  // endregion
 }
 
 // Use this to ensure the static methods defined in the PlatformContext

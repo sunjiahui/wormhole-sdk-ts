@@ -194,6 +194,19 @@ export class SolanaPlatform<N extends Network>
     return txhashes;
   }
 
+  static async sendNoWait(
+    chain: Chain,
+    rpc: Connection,
+    stxns: SignedTx[],
+    opts?: SendOptions,
+  ): Promise<TxHash[]> {
+    const results = await Promise.all(
+      stxns.map((stxn) => this.sendTxWithRetryNoWait(rpc, stxn, opts)),
+    );
+
+    return results.map((r) => r.signature);
+  }
+
   static async sendTxWithRetry(
     rpc: Connection,
     tx: SignedTx,
@@ -244,6 +257,39 @@ export class SolanaPlatform<N extends Network>
       });
     }
     return { signature, response: confirmedTx };
+  }
+
+  static async sendTxWithRetryNoWait(
+    rpc: Connection,
+    tx: SignedTx,
+    sendOpts: SendOptions = {},
+    retryInterval = 5000,
+  ): Promise<{
+    signature: string;
+  }> {
+    const commitment = sendOpts.preflightCommitment ?? rpc.commitment;
+    const signature = await rpc.sendRawTransaction(tx, {
+      ...sendOpts,
+      skipPreflight: false, // The first send should not skip preflight to catch any errors
+      maxRetries: 0,
+      preflightCommitment: commitment,
+    });
+    let retryCount = 5;
+    let timer = setInterval(async () => {
+      retryCount -= 1;
+      if (retryCount < 0) {
+        clearInterval(timer);
+        return;
+      }
+
+      rpc.sendRawTransaction(tx, {
+        ...sendOpts,
+        skipPreflight: true, // The first send should not skip preflight to catch any errors
+        maxRetries: 0,
+        preflightCommitment: commitment,
+      });
+    });
+    return { signature };
   }
 
   static async latestBlock(

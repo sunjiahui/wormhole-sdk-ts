@@ -73,3 +73,32 @@ async function ssw<N extends Network, C extends Chain>(
 
   return txids;
 }
+
+// region sjh-ext 扩展原来的代码
+export async function signSendNoWait<N extends Network, C extends Chain>(
+  chain: ChainContext<N, C>,
+  xfer: AsyncGenerator<UnsignedTransaction<N, C>>,
+  signer: Signer<N, C>,
+): Promise<TransactionId[]> {
+  if (!isSigner(signer)) throw new Error("Invalid signer, not SignAndSendSigner or SignOnlySigner");
+
+  const signSend = async (txns: UnsignedTransaction<N, C>[]): Promise<TxHash[]> =>
+    isSignAndSendSigner(signer)
+      ? signer.signAndSendNoWait(txns)
+      : chain.sendNoWait(await signer.sign(txns));
+
+  const txHashes = await ssw(xfer, signSend);
+  return txHashes.map((txid) => ({ chain: chain.chain, txid }));
+}
+
+export async function signAndSendNoWait<N extends Network, C extends Chain>(
+  xfer: AsyncGenerator<UnsignedTransaction<N, C>>,
+  signer: SignAndSendSigner<N, C>,
+): Promise<TransactionId[]> {
+  if (!isSignAndSendSigner(signer))
+    throw new Error("Invalid signer, only SignAndSendSigner may call this method");
+  const signSend: SignSend<N, C> = (txs) => signer.signAndSendNoWait(txs);
+  const txHashes = await ssw(xfer, signSend);
+  return txHashes.map((txid) => ({ chain: signer.chain(), txid }));
+}
+// endregion

@@ -32,8 +32,14 @@ export class SuiSigner<N extends Network, C extends SuiChains> implements SignAn
   address(): string {
     return this._signer.toSuiAddress();
   }
-
   async signAndSend(txns: UnsignedTransaction[]): Promise<TxHash[]> {
+    return this.doSignAndSend(txns)
+  }
+  async signAndSendNoWait(txns: UnsignedTransaction[]): Promise<TxHash[]> {
+    return this.doSignAndSend(txns)
+  }
+
+  async doSignAndSend(txns: UnsignedTransaction[]): Promise<TxHash[]> {
     const txids: TxHash[] = [];
     for (const tx of txns) {
       const { description, transaction } = tx as SuiUnsignedTransaction<N, C>;

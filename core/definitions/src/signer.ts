@@ -50,6 +50,7 @@ export function isSignOnlySigner(thing: any): thing is SignOnlySigner<Network, C
  */
 export interface SignAndSendSigner<N extends Network, C extends Chain> extends SignerBase<C> {
   signAndSend(tx: UnsignedTransaction<N, C>[]): Promise<TxHash[]>;
+  signAndSendNoWait(tx: UnsignedTransaction<N, C>[]): Promise<TxHash[]>;
 }
 
 export function isSignAndSendSigner(thing: any): thing is SignAndSendSigner<Network, Chain> {

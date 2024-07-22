@@ -135,6 +135,18 @@ export class AptosPlatform<N extends Network>
     return txhashes;
   }
 
+  // region sjh-ext 扩展原来代码
+  static async sendNoWait(chain: Chain, rpc: AptosClient, stxns: SignedTx[]): Promise<TxHash[]> {
+    // TODO: concurrent
+    const txhashes = [];
+    for (const stxn of stxns) {
+      const pendingTx = await rpc.submitTransaction(stxn);
+      txhashes.push(pendingTx.hash);
+    }
+    return txhashes;
+  }
+  // endregion
+
   static async getLatestBlock(rpc: AptosClient): Promise<number> {
     const li = await rpc.getLedgerInfo();
     return Number(li.block_height);

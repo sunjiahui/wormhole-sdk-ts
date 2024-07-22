@@ -148,6 +148,21 @@ export class EvmPlatform<N extends Network>
     return txhashes;
   }
 
+  // region sjh-ext 扩展代码
+  static async sendNoWait(
+    chain: Chain,
+    rpc: Provider,
+    stxns: SignedTx[],
+  ): Promise<TxHash[]> {
+    const txhashes: TxHash[] = [];
+    for (const stxn of stxns) {
+      const txRes = await rpc.broadcastTransaction(stxn);
+      txhashes.push(txRes.hash);
+    }
+    return txhashes;
+  }
+  // endregion
+
   static async getLatestBlock(rpc: Provider): Promise<number> {
     return await rpc.getBlockNumber();
   }

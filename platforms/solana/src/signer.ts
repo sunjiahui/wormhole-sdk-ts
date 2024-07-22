@@ -172,6 +172,14 @@ export class SolanaSendSigner<
   }
 
   async signAndSend(tx: UnsignedTransaction[]): Promise<any[]> {
+    return this.doSignAndSend(tx, true)
+  }
+
+  async signAndSendNoWait(tx: UnsignedTransaction[]): Promise<any[]> {
+    return this.doSignAndSend(tx, false)
+  }
+
+  async doSignAndSend(tx: UnsignedTransaction[], wait: boolean): Promise<any[]> {
     let { blockhash, lastValidBlockHeight } = await SolanaPlatform.latestBlock(
       this._rpc,
     );
@@ -218,12 +226,21 @@ export class SolanaSendSigner<
           }
 
           if (this._debug) console.log('Submitting transactions ');
-          const { signature } = await SolanaPlatform.sendTxWithRetry(
-            this._rpc,
-            transaction.serialize(),
-            this._sendOpts,
-          );
-          txids.push(signature);
+          if (wait) {
+            const { signature } = await SolanaPlatform.sendTxWithRetry(
+              this._rpc,
+              transaction.serialize(),
+              this._sendOpts,
+            );
+            txids.push(signature);
+          } else {
+            const { signature } = await SolanaPlatform.sendTxWithRetryNoWait(
+              this._rpc,
+              transaction.serialize(),
+              this._sendOpts,
+            );
+            txids.push(signature);
+          }
           break;
         } catch (e) {
           // No point checking if retryable if we're on the last retry

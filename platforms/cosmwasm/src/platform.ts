@@ -163,6 +163,17 @@ export class CosmwasmPlatform<N extends Network>
     return txhashes;
   }
 
+  // region sjh-ext 扩展
+  static async sendNoWait(chain: Chain, rpc: CosmWasmClient, stxns: SignedTx[]): Promise<TxHash[]> {
+    const txhashes: TxHash[] = [];
+    for (const stxn of stxns) {
+      const hash = await rpc.broadcastTxSync(stxn);
+      txhashes.push(hash);
+    }
+    return txhashes;
+  }
+  // endregion
+
   static async getLatestBlock(rpc: CosmWasmClient): Promise<number> {
     return await rpc.getHeight();
   }

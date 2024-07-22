@@ -38,8 +38,15 @@ export class AptosSigner<N extends Network, C extends AptosChains>
   address(): string {
     return this._account.address().hex();
   }
-
   async signAndSend(tx: UnsignedTransaction[]): Promise<TxHash[]> {
+    return this.doSignAndSend(tx, true)
+  }
+
+  async signAndSendNoWait(tx: UnsignedTransaction[]): Promise<TxHash[]> {
+    return this.doSignAndSend(tx, false)
+  }
+
+  async doSignAndSend(tx: UnsignedTransaction[], wait: boolean): Promise<TxHash[]> {
     const txhashes = [];
     for (const txn of tx) {
       const { description, transaction } = txn as {
@@ -62,8 +69,13 @@ export class AptosSigner<N extends Network, C extends AptosChains>
         customOpts,
       );
 
-      const { hash } = await this._simSignSend(tx);
-      txhashes.push(hash);
+      if (wait) {
+        const { hash } = await this._simSignSend(tx);
+        txhashes.push(hash);
+      } else {
+        const hash = await this._simSignSendNoWait(tx)
+        txhashes.push(hash)
+      }
     }
     return txhashes;
   }
@@ -83,5 +95,22 @@ export class AptosSigner<N extends Network, C extends AptosChains>
       .signTransaction(this._account, rawTx)
       .then((signedTx) => this._rpc.submitTransaction(signedTx))
       .then((pendingTx) => this._rpc.waitForTransactionWithResult(pendingTx.hash));
+  }
+
+  private async _simSignSendNoWait(rawTx: TxnBuilderTypes.RawTransaction): Promise<string> {
+    // simulate transaction
+    await this._rpc.simulateTransaction(this._account, rawTx).then((sims) =>
+      sims.forEach((tx) => {
+        if (!tx.success) {
+          throw new Error(`Transaction failed: ${tx.vm_status}\n${JSON.stringify(tx, null, 2)}`);
+        }
+      }),
+    );
+
+    // sign & submit transaction
+    return this._rpc
+      .signTransaction(this._account, rawTx)
+      .then((signedTx) => this._rpc.submitTransaction(signedTx))
+      .then((pendingTx) => pendingTx.hash)
   }
 }

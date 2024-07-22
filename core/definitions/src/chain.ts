@@ -134,6 +134,11 @@ export abstract class ChainContext<
     return this.platform.utils().sendWait(this.chain, await this.getRpc(), stxns);
   }
 
+  // region sjh-ext
+  async sendNoWait(stxns: SignedTx[]): Promise<string[]> {
+    return this.platform.utils().sendNoWait(this.chain, await this.getRpc(), stxns);
+  }
+  // endregion
   /**
    * Get the token data from the local cache if available
    * @param symbol the symbol of the token to get
