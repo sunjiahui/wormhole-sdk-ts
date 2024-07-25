@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-aptos-tokenbridge",
-  "version": "0.8.1-fix",
+  "version": "0.8.2-fix",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -45,8 +45,8 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.8.1-fix",
-    "@wormhole-foundation/sdk-aptos": "0.8.1-fix"
+    "@wormhole-foundation/sdk-connect": "0.8.2-fix",
+    "@wormhole-foundation/sdk-aptos": "0.8.2-fix"
   },
   "type": "module",
   "exports": {
