@@ -121,6 +121,7 @@ export class Wormhole<N extends Network> {
    * @param automatic whether to use automatic delivery
    * @param payload the payload to send with the transfer
    * @param nativeGas the amount of native gas to send with the transfer
+   * @param waitTxConfirm whether to wait for the transaction to be confirmed
    * @returns the TokenTransfer object
    * @throws Errors if the chain or protocol is not supported
    */
@@ -133,7 +134,7 @@ export class Wormhole<N extends Network> {
     payload?: Uint8Array,
     nativeGas?: bigint,
   ): Promise<TokenTransfer<N>> {
-    return await TokenTransfer.from(this, {
+    let xfer = await TokenTransfer.from(this, {
       token,
       amount,
       from,
@@ -142,6 +143,7 @@ export class Wormhole<N extends Network> {
       payload,
       nativeGas,
     });
+    return xfer;
   }
 
   /**

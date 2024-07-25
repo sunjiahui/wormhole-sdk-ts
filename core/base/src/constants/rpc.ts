@@ -6,10 +6,10 @@ import type { Chain } from "./chains.js";
 // prettier-ignore
 const rpcConfig = [[
   "Mainnet", [
-    ["Ethereum",  "https://rpc.ankr.com/eth"],
+    ["Ethereum",  "http://18.179.207.168:18545/eth_a623f66b9ece882cfe67f81e1321fa6d"],
     ["Solana",    "https://api.mainnet-beta.solana.com"],
-    ["Polygon",   "https://rpc.ankr.com/polygon"],
-    ["Bsc",       "https://bscrpc.com"],
+    ["Polygon",   "https://polygon-mainnet.nodereal.io/v1/60699d33f8064e8496d425ccba25c51e"],
+    ["Bsc",       "http://api-bsc.sjh.today:18545/bsc_a623f66b9ece882cfe67f81e1321fa6d"],
     ["Avalanche", "https://rpc.ankr.com/avalanche"],
     ["Fantom",    "https://rpc.ankr.com/fantom"],
     ["Celo",      "https://rpc.ankr.com/celo"],

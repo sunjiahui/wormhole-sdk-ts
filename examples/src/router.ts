@@ -94,7 +94,7 @@ import { getSigner } from "./helpers/index.js";
     // EXAMPLE_REQUEST_INITIATE
     // Now the transfer may be initiated
     // A receipt will be returned, guess what you gotta do with that?
-    const receipt = await bestRoute.initiate(tr, sender.signer, quote, receiver.address);
+    const receipt = await bestRoute.initiate(tr, sender.signer, quote, receiver.address, true);
     console.log("Initiated transfer with receipt: ", receipt);
     // EXAMPLE_REQUEST_INITIATE
 

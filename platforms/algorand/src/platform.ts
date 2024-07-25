@@ -177,6 +177,12 @@ export class AlgorandPlatform<N extends Network>
 
     return txIds;
   }
+
+
+  static async waitForTxConfirm(chain: Chain, rpc: algosdk.Algodv2, hash: TxHash, confirms?: number, timeout?: number): Promise<null | any> {
+    // TODO(sjh) - implement
+    throw new Error('NotImplemented')
+  }
   // endregion
 
 

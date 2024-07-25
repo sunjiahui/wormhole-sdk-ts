@@ -207,6 +207,16 @@ export class SolanaPlatform<N extends Network>
     return results.map((r) => r.signature);
   }
 
+  static async waitForTxConfirm(chain: Chain, rpc: Connection, hash: TxHash, confirms?: number, timeout?: number): Promise<null | any> {
+    // TODO(sjh) - implement
+    const latestBlockHash = await rpc.getLatestBlockhash();
+    return await rpc.confirmTransaction({
+      blockhash: latestBlockHash.blockhash,
+      lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+      signature: hash,
+    }, "confirmed");
+  }
+
   static async sendTxWithRetry(
     rpc: Connection,
     tx: SignedTx,

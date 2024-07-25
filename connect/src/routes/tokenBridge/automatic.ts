@@ -229,7 +229,10 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     signer: Signer,
     quote: Q,
     to: ChainAddress,
+    waitTxConfirm?: boolean,
   ): Promise<R> {
+    waitTxConfirm = waitTxConfirm ?? true
+
     const { params } = quote;
     const transfer = this.toTransferDetails(
       request,
@@ -237,7 +240,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
       Wormhole.chainAddress(signer.chain(), signer.address()),
       to,
     );
-    const txids = await TokenTransfer.transfer<N>(request.fromChain, transfer, signer);
+    const txids = await TokenTransfer.transfer<N>(request.fromChain, transfer, signer, waitTxConfirm);
     return {
       from: transfer.from.chain,
       to: transfer.to.chain,

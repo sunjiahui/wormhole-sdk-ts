@@ -172,6 +172,12 @@ export class CosmwasmPlatform<N extends Network>
     }
     return txhashes;
   }
+
+  static async waitForTxConfirm(chain: Chain, rpc: CosmWasmClient, hash: TxHash, confirms?: number, timeout?: number): Promise<null | any> {
+    // TODO(sjh) - implement
+    throw new Error("NotImplemented");
+  }
+
   // endregion
 
   static async getLatestBlock(rpc: CosmWasmClient): Promise<number> {

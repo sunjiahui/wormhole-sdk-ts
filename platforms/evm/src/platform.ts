@@ -161,6 +161,12 @@ export class EvmPlatform<N extends Network>
     }
     return txhashes;
   }
+
+
+  static async waitForTxConfirm(chain: Chain, rpc: Provider, hash: TxHash, confirms?: number, timeout?: number): Promise<null | any> {
+    return rpc.waitForTransaction(hash, confirms, timeout)
+  }
+
   // endregion
 
   static async getLatestBlock(rpc: Provider): Promise<number> {

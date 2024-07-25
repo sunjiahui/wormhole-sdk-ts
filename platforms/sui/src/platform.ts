@@ -25,6 +25,7 @@ import { SUI_COIN } from "./constants.js";
 import type { AnySuiAddress, SuiChains, SuiPlatformType } from "./types.js";
 import { _platform } from "./types.js";
 import { getObjectFields } from "./utils.js";
+import { Connection } from "@solana/web3.js";
 
 /**
  * @category Sui
@@ -142,6 +143,12 @@ export class SuiPlatform<N extends Network>
       txhashes.push(pendingTx.digest);
     }
     return txhashes;
+  }
+
+
+  static async waitForTxConfirm(chain: Chain, rpc: Connection, hash: TxHash, confirms?: number, timeout?: number): Promise<null | any> {
+    // TODO(sjh) - implement
+    throw new Error('NotImplemented')
   }
 
   static async getLatestBlock(rpc: SuiClient): Promise<number> {

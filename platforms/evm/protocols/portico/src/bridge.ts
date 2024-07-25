@@ -27,7 +27,7 @@ import {
   addChainId,
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
-import type { Provider, TransactionRequest } from 'ethers';
+import { MaxUint256, Provider, TransactionRequest } from "ethers";
 import { ethers } from 'ethers';
 import { porticoAbi, uniswapQuoterV2Abi } from './abis.js';
 import { PorticoApi } from './api.js';
@@ -277,7 +277,7 @@ export class EvmPorticoBridge<
     if (allowance < amount) {
       const txReq = await tokenContract.approve.populateTransaction(
         contract,
-        amount,
+        MaxUint256,
       );
       yield this.createUnsignedTransaction(
         addFrom(txReq, senderAddr),

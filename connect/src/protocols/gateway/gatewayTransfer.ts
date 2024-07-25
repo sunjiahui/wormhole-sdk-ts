@@ -27,7 +27,7 @@ import {
   toGatewayMsg,
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
-import { signSendWait } from "../../common.js";
+import { signSendNoWait, signSendWait } from "../../common.js";
 import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../../tasks.js";
 import { TransferState } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
@@ -284,7 +284,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
 
   // start the WormholeTransfer by submitting transactions to the source chain
   // returns a transaction hash
-  async initiateTransfer(signer: Signer): Promise<TxHash[]> {
+  async initiateTransfer(signer: Signer, waitTxConfirm?: boolean): Promise<TxHash[]> {
     if (this._state !== TransferState.Created)
       throw new Error("Invalid state transition in `start`");
 
@@ -489,7 +489,9 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
 
   // finish the WormholeTransfer by submitting transactions to the destination chain
   // returns a transaction hash
-  async completeTransfer(signer: Signer): Promise<TxHash[]> {
+  async completeTransfer(signer: Signer, waitTxConfirm?: boolean): Promise<TxHash[]> {
+    waitTxConfirm = waitTxConfirm ?? true
+
     if (this._state < TransferState.Attested)
       throw new Error("Invalid state transition in `finish`. Be sure to call `fetchAttestation`.");
 
@@ -509,7 +511,8 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     if (!vaa) throw new Error(`No VAA found for ${this.vaas[0]!.id.sequence}`);
 
     const xfer = tb.redeem(toAddress, vaa);
-    const redeemTxs = await signSendWait<N, typeof toChain.chain>(toChain, xfer, signer);
+    const redeemTxs = waitTxConfirm ? await signSendWait<N, typeof toChain.chain>(toChain, xfer, signer)
+      : await signSendNoWait<N, typeof toChain.chain>(toChain, xfer, signer);
     this.transactions.push(...redeemTxs);
     this._state = TransferState.DestinationInitiated;
     return redeemTxs.map(({ txid }) => txid);

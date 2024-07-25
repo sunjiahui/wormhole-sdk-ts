@@ -22,7 +22,7 @@ import {
   isWormholeMessageId,
 } from "@wormhole-foundation/sdk-definitions";
 
-import { signSendWait } from "../../common.js";
+import { signSendNoWait, signSendWait } from "../../common.js";
 import { DEFAULT_TASK_TIMEOUT } from "../../config.js";
 import type {
   AttestationReceipt as _AttestationReceipt,
@@ -248,11 +248,11 @@ export class CircleTransfer<N extends Network = Network>
 
   // start the WormholeTransfer by submitting transactions to the source chain
   // returns a transaction hash
-  async initiateTransfer(signer: Signer): Promise<TxHash[]> {
+  async initiateTransfer(signer: Signer, waitTxConfirm?: boolean): Promise<TxHash[]> {
     if (this._state !== TransferState.Created)
       throw new Error("Invalid state transition in `start`");
 
-    this.txids = await CircleTransfer.transfer<N>(this.fromChain, this.transfer, signer);
+    this.txids = await CircleTransfer.transfer<N>(this.fromChain, this.transfer, signer, waitTxConfirm);
     this._state = TransferState.SourceInitiated;
 
     return this.txids.map(({ txid }) => txid);
@@ -342,7 +342,9 @@ export class CircleTransfer<N extends Network = Network>
 
   // finish the WormholeTransfer by submitting transactions to the destination chain
   // returns a transaction hash
-  async completeTransfer(signer: Signer): Promise<TxHash[]> {
+  async completeTransfer(signer: Signer, waitTxConfirm?: boolean): Promise<TxHash[]> {
+    waitTxConfirm = waitTxConfirm ?? true
+
     if (this._state < TransferState.Attested)
       throw new Error("Invalid state transition in `finish`");
 
@@ -374,7 +376,8 @@ export class CircleTransfer<N extends Network = Network>
     const sender = Wormhole.parseAddress(signer.chain(), signer.address());
     const xfer = tb.redeem(sender, message, signatures!);
 
-    const txids = await signSendWait<N, Chain>(this.toChain, xfer, signer);
+    const txids = waitTxConfirm ? await signSendWait<N, Chain>(this.toChain, xfer, signer)
+      : await signSendNoWait<N, Chain>(this.toChain, xfer, signer);
     this.txids?.push(...txids);
     return txids.map(({ txid }) => txid);
   }
@@ -396,7 +399,10 @@ export namespace CircleTransfer {
     fromChain: ChainContext<N, C>,
     transfer: CircleTransferDetails,
     signer: Signer<N, Chain>,
+    waitTxConfirm?: boolean,
   ): Promise<TransactionId[]> {
+    waitTxConfirm = waitTxConfirm ?? true;
+
     let xfer: AsyncGenerator<UnsignedTransaction<N>>;
     if (transfer.automatic) {
       const cr = await fromChain.getAutomaticCircleBridge();
@@ -415,7 +421,8 @@ export namespace CircleTransfer {
       );
     }
 
-    return await signSendWait<N, Chain>(fromChain, xfer, signer);
+    return waitTxConfirm ? await signSendWait<N, Chain>(fromChain, xfer, signer)
+      : await signSendNoWait<N, Chain>(fromChain, xfer, signer)
   }
 
   // AsyncGenerator fn that produces status updates through an async generator

@@ -27,7 +27,7 @@ import {
   UniversalAddress,
   sha3_256,
 } from "@wormhole-foundation/sdk-definitions";
-import { signSendWait } from "../../common.js";
+import { signSendNoWait, signSendWait } from "../../common.js";
 import { DEFAULT_TASK_TIMEOUT } from "../../config.js";
 import type {
   AttestationReceipt as _AttestationReceipt,
@@ -207,11 +207,13 @@ export class TokenTransfer<N extends Network = Network>
 
   // start the WormholeTransfer by submitting transactions to the source chain
   // returns a transaction hash
-  async initiateTransfer(signer: Signer): Promise<TxHash[]> {
+  async initiateTransfer(signer: Signer, waitTxConfirm?: boolean): Promise<TxHash[]> {
+    waitTxConfirm = waitTxConfirm ?? true
+
     if (this._state !== TransferState.Created)
       throw new Error("Invalid state transition in `initiateTransfer`");
 
-    this.txids = await TokenTransfer.transfer<N>(this.fromChain, this.transfer, signer);
+    this.txids = await TokenTransfer.transfer<N>(this.fromChain, this.transfer, signer, waitTxConfirm)
     this._state = TransferState.SourceInitiated;
     return this.txids.map(({ txid }) => txid);
   }
@@ -261,7 +263,9 @@ export class TokenTransfer<N extends Network = Network>
 
   // finish the WormholeTransfer by submitting transactions to the destination chain
   // returns a transaction hash
-  async completeTransfer(signer: Signer): Promise<TxHash[]> {
+  async completeTransfer(signer: Signer, waitTxConfirm?: boolean): Promise<TxHash[]> {
+    waitTxConfirm = waitTxConfirm ?? true
+
     if (this._state < TransferState.Attested)
       throw new Error(
         "Invalid state transition, must be attested prior to calling `completeTransfer`.",
@@ -276,6 +280,7 @@ export class TokenTransfer<N extends Network = Network>
       this.toChain,
       attestation as TokenTransfer.VAA,
       signer,
+      waitTxConfirm
     );
     this.txids.push(...redeemTxids);
     this._state = TransferState.DestinationInitiated;
@@ -302,7 +307,10 @@ export namespace TokenTransfer {
     fromChain: ChainContext<N, Chain>,
     transfer: TokenTransferDetails,
     signer: Signer<N, Chain>,
+    waitTxConfirm?: boolean,
   ): Promise<TransactionId[]> {
+    waitTxConfirm = waitTxConfirm ?? true
+
     const senderAddress = toNative(signer.chain(), signer.address());
 
     const token = isTokenId(transfer.token) ? transfer.token.address : transfer.token;
@@ -315,7 +323,9 @@ export namespace TokenTransfer {
       xfer = tb.transfer(senderAddress, transfer.to, token, transfer.amount, transfer.payload);
     }
 
-    return signSendWait<N, Chain>(fromChain, xfer, signer);
+    return waitTxConfirm
+      ? signSendWait<N, Chain>(fromChain, xfer, signer)
+      : signSendNoWait<N, Chain>(fromChain, xfer, signer);
   }
 
   // Static method to allow passing a custom RPC
@@ -323,7 +333,10 @@ export namespace TokenTransfer {
     toChain: ChainContext<N, Chain>,
     vaa: TokenTransfer.VAA,
     signer: Signer<N, Chain>,
+    waitTxConfirm?: boolean,
   ): Promise<TransactionId[]> {
+    waitTxConfirm = waitTxConfirm ?? true
+
     const signerAddress = toNative(signer.chain(), signer.address());
 
     const xfer =
@@ -331,7 +344,9 @@ export namespace TokenTransfer {
         ? (await toChain.getAutomaticTokenBridge()).redeem(signerAddress, vaa)
         : (await toChain.getTokenBridge()).redeem(signerAddress, vaa);
 
-    return signSendWait<N, Chain>(toChain, xfer, signer);
+    return waitTxConfirm
+      ? signSendWait<N, Chain>(toChain, xfer, signer)
+      : signSendNoWait<N, Chain>(toChain, xfer, signer);
   }
 
   // AsyncGenerator fn that produces status updates through an async generator

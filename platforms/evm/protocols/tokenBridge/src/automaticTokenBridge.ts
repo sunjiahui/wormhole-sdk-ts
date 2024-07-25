@@ -24,7 +24,7 @@ import {
   addChainId,
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
-import type { Provider, TransactionRequest } from 'ethers';
+import { MaxUint256, Provider, TransactionRequest } from "ethers";
 import { ethers_contracts } from './index.js';
 
 import '@wormhole-foundation/sdk-evm-core';
@@ -154,7 +154,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
       if (allowance < amount) {
         const txReq = await tokenContract.approve.populateTransaction(
           this.tokenBridgeRelayer.target,
-          amount,
+          MaxUint256,
         );
         yield this.createUnsignedTx(
           addFrom(txReq, senderAddr),

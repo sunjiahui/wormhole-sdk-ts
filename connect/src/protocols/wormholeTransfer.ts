@@ -58,7 +58,7 @@ export interface WormholeTransfer<PN extends ProtocolName> {
 
   // Initiate the WormholeTransfer by submitting transactions to the source chain
   // returns an array transaction hashes
-  initiateTransfer(signer: Signer): Promise<TxHash[]>;
+  initiateTransfer(signer: Signer, waitTxConfirm?: boolean): Promise<TxHash[]>;
 
   // wait for the Attestation to be ready, timeout in ms
   // returns the sequence number
@@ -66,5 +66,5 @@ export interface WormholeTransfer<PN extends ProtocolName> {
 
   // finish the WormholeTransfer by submitting transactions to the destination chain
   // returns a transaction hashes
-  completeTransfer(signer: Signer): Promise<TxHash[]>;
+  completeTransfer(signer: Signer, waitTxConfirm?: boolean): Promise<TxHash[]>;
 }

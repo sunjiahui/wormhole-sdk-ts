@@ -15,10 +15,11 @@ import type {
   Provider,
   TransactionRequest,
 } from 'ethers';
-import { NonceManager, Wallet } from 'ethers';
+import { Wallet } from 'ethers';
 import { EvmPlatform } from './platform.js';
 import type { EvmChains } from './types.js';
 import { _platform } from './types.js';
+import { NonceManagerExt } from "./NonceManagerExt.js";
 
 export type EvmSignerOptions = {
   // Whether or not to log messages
@@ -38,7 +39,7 @@ export async function getEvmSigner(
     typeof key === 'string' ? new Wallet(key, rpc) : key;
 
   const chain = opts?.chain ?? (await EvmPlatform.chainFromRpc(rpc))[1];
-  const managedSigner = new NonceManager(signer);
+  const managedSigner = new NonceManagerExt(signer);
 
   if (managedSigner.provider === null) {
     try {
@@ -126,7 +127,7 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
     // Oasis throws malformed errors unless we
     // set it to use legacy transaction parameters
     const gasOpts =
-      chain === 'Oasis'
+      chain === 'Oasis' || chain == 'Bsc'
         ? { gasLimit, gasPrice, type: 0 } // Hardcoded to legacy transaction type
         : { gasLimit, maxFeePerGas, maxPriorityFeePerGas };
 

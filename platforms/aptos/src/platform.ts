@@ -145,6 +145,16 @@ export class AptosPlatform<N extends Network>
     }
     return txhashes;
   }
+
+  static async waitForTxConfirm(chain: Chain, rpc: AptosClient, hash: TxHash, confirms?: number, timeout?: number): Promise<null | any> {
+    let extraArgs = timeout ? { timeoutSecs: timeout / 1000 } : {};
+    try {
+      return await rpc.waitForTransactionWithResult(hash, extraArgs);
+    } catch (e: any) {
+      return null
+    }
+  }
+
   // endregion
 
   static async getLatestBlock(rpc: AptosClient): Promise<number> {

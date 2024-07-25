@@ -49,6 +49,7 @@ export abstract class Route<
     sender: Signer,
     quote: Quote<OP, VP>,
     to: ChainAddress,
+    waitTxConfirm?: boolean,
   ): Promise<R>;
 
   // Track the progress of the transfer over time
@@ -129,7 +130,7 @@ export abstract class ManualRoute<
 > extends Route<N, OP, VP, R> {
   NATIVE_GAS_DROPOFF_SUPPORTED = false;
   IS_AUTOMATIC = false;
-  public abstract complete(sender: Signer, receipt: R): Promise<R>;
+  public abstract complete(sender: Signer, receipt: R, waitTxConfirm?: boolean): Promise<R>;
 }
 
 export function isManual<N extends Network>(route: Route<N>): route is ManualRoute<N> {

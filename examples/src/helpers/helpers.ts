@@ -19,6 +19,8 @@ import cosmwasm from "../../../sdk/dist/esm/platforms/cosmwasm.js";
 import evm from "../../../sdk/dist/esm/platforms/evm.js";
 import solana from "../../../sdk/dist/esm/platforms/solana.js";
 import sui from "../../../sdk/dist/esm/platforms/sui.js";
+import { ethers } from "ethers";
+import * as fs from "node:fs";
 
 // Use .env.example as a template for your .env file and populate it with secrets
 // for funded accounts on the relevant chain+network combos to run the example
@@ -69,9 +71,15 @@ export async function getSigner<N extends Network, C extends Chain>(
       signer = await cosmwasm.getSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
       break;
     case "Evm":
-      signer = await evm.getSigner(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"), {
+      let jsonContent = fs.readFileSync('/Volumes/sec-files/wallets/test-2634046ee310bb72dfb187c35e9422cfe2763353.ks', 'utf8');
+      let wallet = ethers.Wallet.fromEncryptedJsonSync(jsonContent, 'fuckCSDN1234');
+      let overrides = chain.chain == 'Bsc'
+        ? {gasPrice: ethers.parseUnits('1.1', 9)}
+        : undefined
+      signer = await evm.getSigner(await chain.getRpc(), wallet.privateKey, {
         debug: true,
         maxGasLimit: amount.units(amount.parse("0.01", 18)),
+        overrides,
         // overrides is a Partial<TransactionRequest>, so any fields can be overriden
         //overrides: {
         //  maxFeePerGas: amount.units(amount.parse("1.5", 9)),
@@ -116,4 +124,13 @@ export async function waitForRelay(txid: TxHash): Promise<api.RelayData | null> 
   const relayerApi = "https://relayer.dev.stable.io";
   const task = () => api.getRelayStatus(relayerApi, txid);
   return tasks.retry<api.RelayData>(task, 5000, 60 * 1000, "Wormhole:GetRelayStatus");
+}
+
+export async function waitTxConfirm<N extends Network, C extends Chain>(wh: Wormhole<N>, chain: Chain, txid: string) {
+  let chainCtx = wh.getChain(chain);
+  return await chainCtx.platform.utils().waitForTxConfirm(
+    chainCtx.chain,
+    chainCtx.getRpc(),
+    txid
+  )
 }

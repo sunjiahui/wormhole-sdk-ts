@@ -131,7 +131,10 @@ export class TokenBridgeRoute<N extends Network>
     signer: Signer,
     quote: Q,
     to: ChainAddress,
+    waitTxConfirm?: boolean,
   ): Promise<R> {
+    waitTxConfirm = waitTxConfirm ?? true
+
     const { params } = quote;
     const transfer = await TokenTransfer.destinationOverrides(
       request.fromChain,
@@ -143,7 +146,7 @@ export class TokenBridgeRoute<N extends Network>
         to,
       ),
     );
-    const txids = await TokenTransfer.transfer<N>(request.fromChain, transfer, signer);
+    const txids = await TokenTransfer.transfer<N>(request.fromChain, transfer, signer, waitTxConfirm);
     return {
       from: transfer.from.chain,
       to: transfer.to.chain,
@@ -152,7 +155,9 @@ export class TokenBridgeRoute<N extends Network>
     } satisfies SourceInitiatedTransferReceipt;
   }
 
-  async complete(signer: Signer, receipt: R): Promise<R> {
+  async complete(signer: Signer, receipt: R, waitTxConfirm?: boolean): Promise<R> {
+    waitTxConfirm = waitTxConfirm ?? true
+
     if (!isAttested(receipt))
       throw new Error("The source must be finalized in order to complete the transfer");
     const toChain = this.wh.getChain(receipt.to);
@@ -160,6 +165,7 @@ export class TokenBridgeRoute<N extends Network>
       toChain,
       receipt.attestation.attestation as TokenTransfer.VAA,
       signer,
+      waitTxConfirm,
     );
 
     return {

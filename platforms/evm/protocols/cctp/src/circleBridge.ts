@@ -27,7 +27,7 @@ import {
   addChainId,
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
-import type { LogDescription, Provider, TransactionRequest } from 'ethers';
+import { LogDescription, MaxUint256, Provider, TransactionRequest } from "ethers";
 import { ethers } from 'ethers';
 import { ethers_contracts } from './index.js';
 //https://github.com/circlefin/evm-cctp-contracts
@@ -150,7 +150,7 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
     if (allowance < amount) {
       const txReq = await tokenContract.approve.populateTransaction(
         this.tokenMessenger.target,
-        amount,
+        MaxUint256,
       );
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),

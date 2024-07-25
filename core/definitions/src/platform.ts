@@ -87,6 +87,13 @@ export interface PlatformUtils<P extends Platform> {
     rpc: RpcConnection<P>,
     stxns: SignedTx[],
   ): Promise<TxHash[]>;
+
+  waitForTxConfirm<C extends PlatformToChains<P>>(
+    chain: C,
+    rpc: RpcConnection<P>,
+    hash: TxHash,
+    confirms?: number,
+    timeout?: number): Promise<null | any>;
   // endregion
 }
 
