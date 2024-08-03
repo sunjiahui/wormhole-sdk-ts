@@ -31,6 +31,9 @@ export async function retry<T>(
   title?: string,
 ): Promise<T | null> {
   const maxRetries = Math.floor(timeout / interval);
+  if (maxRetries <= 0) {
+    return task()
+  }
 
   let retries = 0;
   return new Promise<T | null>((resolve, reject) => {
