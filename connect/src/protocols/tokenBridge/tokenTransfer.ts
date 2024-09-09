@@ -342,7 +342,7 @@ export namespace TokenTransfer {
     const xfer =
       vaa.protocolName === "AutomaticTokenBridge"
         ? (await toChain.getAutomaticTokenBridge()).redeem(signerAddress, vaa)
-        : (await toChain.getTokenBridge()).redeem(signerAddress, vaa);
+        : (await toChain.getTokenBridge()).redeem(signerAddress, vaa, false);
 
     return waitTxConfirm
       ? signSendWait<N, Chain>(toChain, xfer, signer)

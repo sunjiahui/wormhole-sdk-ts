@@ -510,7 +510,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     const { vaa } = this.vaas[0]!;
     if (!vaa) throw new Error(`No VAA found for ${this.vaas[0]!.id.sequence}`);
 
-    const xfer = tb.redeem(toAddress, vaa);
+    const xfer = tb.redeem(toAddress, vaa, false);
     const redeemTxs = waitTxConfirm ? await signSendWait<N, typeof toChain.chain>(toChain, xfer, signer)
       : await signSendNoWait<N, typeof toChain.chain>(toChain, xfer, signer);
     this.transactions.push(...redeemTxs);
