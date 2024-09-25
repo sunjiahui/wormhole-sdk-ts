@@ -1,32 +1,24 @@
-import {
-  amount,
-  Chain,
-  isTokenId,
-  Network,
-  TokenId,
-  TokenTransfer,
-  Wormhole,
-  wormhole,
-} from "@wormhole-foundation/sdk";
+import type { Chain, Network, TokenId } from "@wormhole-foundation/sdk";
+import { TokenTransfer, Wormhole, amount, isTokenId, wormhole } from "@wormhole-foundation/sdk";
 
 // Import the platform-specific packages
+
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
-import { getSigner, SignerStuff, waitLog, waitTxConfirm } from "./helpers/index.js";
-import { TransferState } from "@wormhole-foundation/sdk-connect";
+import type { SignerStuff } from "./helpers/index.js";
+import { getSigner, waitLog } from "./helpers/index.js";
 
-(async function() {
+(async function () {
   // Init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = await wormhole("Mainnet", [evm, solana]);
+  const wh = await wormhole("Testnet", [evm, solana]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
-  const sendChain = wh.getChain("Bsc");
-  const rcvChain = wh.getChain("Polygon");
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Solana");
 
   // Shortcut to allow transferring native gas token
-  // const token = Wormhole.tokenId(sendChain.chain, "native");
-  const token = Wormhole.tokenId(sendChain.chain, "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d");
+  const token = Wormhole.tokenId(sendChain.chain, "native");
 
   // A TokenId is just a `{chain, address}` pair and an alias for ChainAddress
   // The `address` field must be a parsed address.
@@ -42,7 +34,7 @@ import { TransferState } from "@wormhole-foundation/sdk-connect";
   // Note: The Token bridge will dedust past 8 decimals
   // this means any amount specified past that point will be returned
   // to the caller
-  const amt = "0.2";
+  const amt = "0.05";
 
   // With automatic set to true, perform an automatic transfer. This will invoke a relayer
   // contract intermediary that knows to pick up the transfers
@@ -73,42 +65,30 @@ import { TransferState } from "@wormhole-foundation/sdk-connect";
   // Set this to the transfer txid of the initiating transaction to recover a token transfer
   // and attempt to fetch details about its progress.
   let recoverTxid = undefined;
-  recoverTxid = '0xa641099246fe5cd0e8d6d67e1f49f20fba7fe2733ac94559a165a0d1fb677a25'
   // recoverTxid = "0xa4e0a2c1c994fe3298b5646dfd5ce92596dc1a589f42e241b7f07501a5a5a39f";
 
   // Finally create and perform the transfer given the parameters set above
   const xfer = !recoverTxid
     ? // Perform the token transfer
-    await tokenTransfer(
-      wh,
-      {
-        token,
-        amount: amount.units(amount.parse(amt, decimals)),
-        source,
-        destination,
-        delivery: {
-          automatic,
-          nativeGas: nativeGas ? amount.units(amount.parse(nativeGas, decimals)) : undefined,
+      await tokenTransfer(
+        wh,
+        {
+          token,
+          amount: amount.units(amount.parse(amt, decimals)),
+          source,
+          destination,
+          delivery: {
+            automatic,
+            nativeGas: nativeGas ? amount.units(amount.parse(nativeGas, decimals)) : undefined,
+          },
         },
-      },
-      roundTrip,
-    )
+        roundTrip,
+      )
     : // Recover the transfer from the originating txid
-    await TokenTransfer.from(wh, {
-      chain: source.chain.chain,
-      txid: recoverTxid,
-    });
-  let test = false
-  if (xfer.getTransferState() == TransferState.Attested || test) {
-    // 3) Redeem the VAA on the dest chain
-    console.log("Completing Transfer");
-    const destTxids = await xfer.completeTransfer(destination.signer, false);
-    console.log(`Completed Transfer: `, destTxids);
-    for (let txid of destTxids) {
-      let txResult = await waitTxConfirm(wh, destination.chain.chain, txid);
-      console.log(`Confirmed transfer: `, txid, txResult);
-    }
-  }
+      await TokenTransfer.from(wh, {
+        chain: source.chain.chain,
+        txid: recoverTxid,
+      });
 
   const receipt = await waitLog(wh, xfer);
 
@@ -156,12 +136,8 @@ async function tokenTransfer<N extends Network>(
 
   // 1) Submit the transactions to the source chain, passing a signer to sign any txns
   console.log("Starting transfer");
-  const srcTxids = await xfer.initiateTransfer(route.source.signer, false);
+  const srcTxids = await xfer.initiateTransfer(route.source.signer);
   console.log(`Started transfer: `, srcTxids);
-  for (let txid of srcTxids) {
-    let txResult = await waitTxConfirm(wh, route.source.chain.chain, txid);
-    console.log(`Confirmed transfer: `, txid, txResult);
-  }
 
   // If automatic, we're done
   if (route.delivery?.automatic) return xfer;
@@ -173,12 +149,8 @@ async function tokenTransfer<N extends Network>(
 
   // 3) Redeem the VAA on the dest chain
   console.log("Completing Transfer");
-  const destTxids = await xfer.completeTransfer(route.destination.signer, false);
+  const destTxids = await xfer.completeTransfer(route.destination.signer);
   console.log(`Completed Transfer: `, destTxids);
-  for (let txid of destTxids) {
-    let txResult = await waitTxConfirm(wh, route.destination.chain.chain, txid);
-    console.log(`Confirmed transfer: `, txid, txResult);
-  }
   // EXAMPLE_TOKEN_TRANSFER
 
   // If no need to send back, dip
@@ -193,4 +165,3 @@ async function tokenTransfer<N extends Network>(
     destination: route.source,
   });
 }
-

@@ -14,6 +14,9 @@ import { TransferState } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
 import type { StaticRouteMethods } from "../route.js";
 import { AutomaticRoute } from "../route.js";
+import {
+  MinAmountError,
+} from '../types.js';
 import type {
   Quote,
   QuoteResult,
@@ -55,7 +58,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
   extends AutomaticRoute<N, Op, Vp, R>
   implements StaticRouteMethods<typeof AutomaticTokenBridgeRoute>
 {
-  NATIVE_GAS_DROPOFF_SUPPORTED = true;
+  static NATIVE_GAS_DROPOFF_SUPPORTED = true;
 
   static meta = {
     name: "AutomaticTokenBridge",
@@ -167,12 +170,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     // Min amount is fee + 5%
     const minAmount = (fee * 105n) / 100n;
     if (amount.units(amt) < minAmount) {
-      throw new Error(
-        `Minimum amount is ${amount.display({
-          amount: minAmount.toString(),
-          decimals: amt.decimals,
-        })}`,
-      );
+      throw new MinAmountError(amount.fromBaseUnits(minAmount, amt.decimals));
     }
 
     const redeemableAmount = amount.units(amt) - fee;
@@ -181,10 +179,23 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     if (params.options && params.options.nativeGas > 0) {
       const dtb = await request.toChain.getAutomaticTokenBridge();
       // the maxSwapAmount is in destination chain decimals
-      const maxSwapAmount = await dtb.maxSwapAmount(request.destination.id.address);
+      let maxSwapAmount = await dtb.maxSwapAmount(request.destination.id.address);
+      const redeemableAmountTruncated = amount.truncate(
+        amount.fromBaseUnits(redeemableAmount, amt.decimals),
+        TokenTransfer.MAX_DECIMALS,
+      );
+      const dstDecimals = await request.toChain.getDecimals(request.destination.id.address);
+      const dstAmountReceivable = amount.units(
+        amount.scale(redeemableAmountTruncated, dstDecimals),
+      );
+      if (dstAmountReceivable < maxSwapAmount) {
+        // can't swap more than the receivable amount
+        maxSwapAmount = dstAmountReceivable;
+      }
       const scale = 10000;
       const scaledGasPercent = BigInt(Math.floor(params.options.nativeGas * scale));
       const dstNativeGasUnits = (maxSwapAmount * scaledGasPercent) / BigInt(scale);
+      // the native gas percentage is applied to the max swap amount
       const dstNativeGasAmount = amount.fromBaseUnits(
         dstNativeGasUnits,
         request.destination.decimals,

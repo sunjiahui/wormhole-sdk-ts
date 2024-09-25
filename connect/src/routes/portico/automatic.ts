@@ -1,4 +1,4 @@
-import { filters } from "@wormhole-foundation/sdk-base";
+import { filters, finality } from "@wormhole-foundation/sdk-base";
 import type { StaticRouteMethods } from "../route.js";
 import { AutomaticRoute } from "../route.js";
 import type {
@@ -72,7 +72,7 @@ export class AutomaticPorticoRoute<N extends Network>
   extends AutomaticRoute<N, OP, VP, R>
   implements StaticRouteMethods<typeof AutomaticPorticoRoute>
 {
-  NATIVE_GAS_DROPOFF_SUPPORTED = false;
+  static NATIVE_GAS_DROPOFF_SUPPORTED = false;
 
   static meta = {
     name: "AutomaticPortico",
@@ -255,6 +255,7 @@ export class AutomaticPorticoRoute<N extends Network>
             token: params.normalizedParams.destinationToken,
             amount: fee,
           },
+          eta: finality.estimateFinalityTime(request.fromChain.chain),
         },
         params,
         details,

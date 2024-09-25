@@ -1,17 +1,9 @@
-import {
-  Chain,
-  CircleTransfer,
-  Network,
-  Signer,
-  TransactionId,
-  TransferState,
-  Wormhole,
-  amount,
-  wormhole,
-} from "@wormhole-foundation/sdk";
+import type { Network, Signer, TransactionId, Wormhole } from "@wormhole-foundation/sdk";
+import { CircleTransfer, amount, wormhole } from "@wormhole-foundation/sdk";
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
-import { SignerStuff, getSigner, waitForRelay, waitTxConfirm } from "./helpers/index.js";
+import type { SignerStuff } from "./helpers/index.js";
+import { getSigner } from "./helpers/index.js";
 
 /*
 Notes:
@@ -24,11 +16,11 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = await wormhole("Mainnet", [evm, solana]);
+  const wh = await wormhole("Testnet", [evm, solana]);
 
   // Grab chain Contexts
-  const sendChain = wh.getChain("Optimism");
-  const rcvChain = wh.getChain("Arbitrum");
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Solana");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -47,14 +39,11 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   // The amount specified here is denominated in the token being transferred (USDC here)
   const nativeGas = automatic ? amount.units(amount.parse("0.0", 6)) : 0n;
 
-  // await cctpTransfer(wh, source, destination, {
-  //   amount: amt,
-  //   automatic,
-  //   nativeGas,
-  // });
-
-  let recovertId = '0xde76cfd802dcb34868c41fe834bb648fd8126cd5ed9241d024f218f61c157eee'
-  await completeTransfer(wh, {chain: sendChain.chain, txid: recovertId}, destination.signer);
+  await cctpTransfer(wh, source, destination, {
+    amount: amt,
+    automatic,
+    nativeGas,
+  });
 
   // Note: you can pick up a partial transfer from the origin chain name and txid
   // once created, you can call `fetchAttestations` and `completeTransfer` assuming its a manual transfer.
@@ -104,18 +93,8 @@ async function cctpTransfer<N extends Network>(
   console.log("Quote", quote);
 
   console.log("Starting Transfer");
-  const srcTxids = await xfer.initiateTransfer(src.signer, false);
+  const srcTxids = await xfer.initiateTransfer(src.signer);
   console.log(`Started Transfer: `, srcTxids);
-  for (let txid of srcTxids) {
-    let txResult = await waitTxConfirm(wh, src.chain.chain, txid);
-    console.log(`Confirmed transfer: `, txid, txResult);
-  }
-
-  if (req.automatic) {
-    const relayStatus = await waitForRelay(srcTxids[srcTxids.length - 1]!);
-    console.log(`Finished relay: `, relayStatus);
-    return;
-  }
 
   // Note: Depending on chain finality, this timeout may need to be increased.
   // See https://developers.circle.com/stablecoin/docs/cctp-technical-reference#mainnet for more
@@ -124,12 +103,8 @@ async function cctpTransfer<N extends Network>(
   console.log(`Got Attestation: `, attestIds);
 
   console.log("Completing Transfer");
-  const dstTxids = await xfer.completeTransfer(dst.signer, false);
+  const dstTxids = await xfer.completeTransfer(dst.signer);
   console.log(`Completed Transfer: `, dstTxids);
-  for (let txid of dstTxids) {
-    let txResult = await waitTxConfirm(wh, dst.chain.chain, txid);
-    console.log(`Confirmed transfer: `, txid, txResult);
-  }
   // EXAMPLE_CCTP_TRANSFER
 }
 
@@ -145,11 +120,7 @@ export async function completeTransfer(
   const attestIds = await xfer.fetchAttestation(60 * 60 * 1000);
   console.log("Got attestation: ", attestIds);
 
-  const dstTxIds = await xfer.completeTransfer(signer, false);
+  const dstTxIds = await xfer.completeTransfer(signer);
   console.log("Completed transfer: ", dstTxIds);
-  for (let txid of dstTxIds) {
-    let txResult = await waitTxConfirm(wh, signer.chain(), txid);
-    console.log(`Confirmed transfer: `, txid, txResult);
-  }
   // EXAMPLE_RECOVER_TRANSFER
 }
