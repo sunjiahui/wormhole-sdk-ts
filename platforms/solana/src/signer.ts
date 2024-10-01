@@ -35,7 +35,7 @@ const DEFAULT_MIN_PRIORITY_FEE = 1;
 const DEFAULT_MAX_PRIORITY_FEE = 1e9;
 
 const DEFAULT_MAX_RESUBMITS = 5;
-const DEFAULT_COMPUTE_BUDGET = 250_000;
+const DEFAULT_COMPUTE_BUDGET = 400_000;
 
 /** Options for setting the priority fee for a transaction */
 export type PriorityFeeOptions = {
