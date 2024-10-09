@@ -387,7 +387,9 @@ export async function determineComputeBudget(
 
     if (simulateResponse?.value?.unitsConsumed) {
       // Set compute budget to 120% of the units used in the simulated transaction
-      computeBudget = Math.round(simulateResponse.value.unitsConsumed * 1.2);
+      computeBudget = Math.max(
+        Math.round(simulateResponse.value.unitsConsumed * 1.33),
+        20_0000);
     }
   } catch (e) {
     console.error(
