@@ -369,9 +369,13 @@ export async function getGovernedTokens(rpcUrl: string): Promise<GovernedTokens 
     const response = await axios.get<{ entries: GovernorTokenListEntry[] }>(url);
     if (response.data && response.data.entries.length > 0) {
       return response.data.entries.reduce((acc, entry) => {
-        const chain = toChain(entry.originChainId);
-        acc[chain] = acc[chain] || {};
-        acc[chain]![entry.originAddress] = entry.price;
+        try {
+          const chain = toChain(entry.originChainId);
+          acc[chain] = acc[chain] || {};
+          acc[chain]![entry.originAddress] = entry.price;
+        } catch {
+          console.error("Invalid chain id", entry.originChainId);
+        }
         return acc;
       }, {} as GovernedTokens);
     }
@@ -410,11 +414,15 @@ export async function getGovernorLimits(rpcUrl: string): Promise<GovernorLimits 
             ? undefined
             : amount.whole(amount.parse(entry.bigTransactionSize, 2));
 
-        acc[toChain(entry.chainId)] = {
-          available: amount.whole(amount.parse(entry.remainingAvailableNotional, 2)),
-          limit: amount.whole(amount.parse(entry.notionalLimit, 2)),
-          maxSize,
-        };
+        try {
+          acc[toChain(entry.chainId)] = {
+            available: amount.whole(amount.parse(entry.remainingAvailableNotional, 2)),
+            limit: amount.whole(amount.parse(entry.notionalLimit, 2)),
+            maxSize,
+          };
+        } catch {
+          console.error("Invalid chain id", entry.chainId);
+        }
         return acc;
       }, {} as GovernorLimits);
     }
